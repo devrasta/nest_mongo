@@ -1,0 +1,43 @@
+version: '3.9'
+services:
+  dev:
+    container_name: server-dev
+    build:
+      context: .
+      target: development
+      dockerfile: ./Dockerfile
+    command: npm run start:debug
+    ports:
+      - 3000:3000
+      - 9229:9229
+    networks:
+      - server-network
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    environment:
+      MONGO_URI: 'mongodb://admin:admin@mongodb'
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    command: mongod --dbpath /data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+      - MONGO_INITDB_DATABASE=nestjs
+    networks:
+      - server-network
+    ports:
+      - 27017:27017
+    volumes:
+      - my_data:/data/db
+    restart: always
+
+volumes:
+  my_data:
+networks:
+  server-network:
